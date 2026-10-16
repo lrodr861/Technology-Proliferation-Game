@@ -151,7 +151,7 @@
 <div class="wrap">
 
   <header>
-    <p class="eyebrow ui">The Proliferation Game — Week 1–2 build (structure &amp; styling only, not yet interactive)</p>
+    <p class="eyebrow ui">The Proliferation Game — Week 1–3 build (buttons work; stat math is placeholder)</p>
     <h1>A technology has just been invented.</h1>
     <p class="sub">Six decisions stand between you and the world it makes. Each turn, choose to spread it, restrict it, or contain it — then watch what that does to adoption, cost, risk, and benefit.</p>
   </header>
@@ -223,5 +223,63 @@
 
 </div>
 
+<script>
+  // Week 3: JavaScript wiring. Flat placeholder numbers only; real formulas arrive in Week 4.
+  const MAX_TURNS = 6;
+
+  const state = { turn: 1, adoption: 10, cost: 10, risk: 15, benefit: 10 };
+  const history = [];
+
+  const PLACEHOLDER_EFFECTS = {
+    spread:   { adoption: 15, cost: 5,  risk: 10,  benefit: 10 },
+    restrict: { adoption: -5, cost: 8,  risk: -8,  benefit: -3 },
+    contain:  { adoption: 0,  cost: 12, risk: -12, benefit: -2 }
+  };
+
+  const STAT_KEYS = ['adoption', 'cost', 'risk', 'benefit'];
+
+  function clamp(n) { return Math.max(0, Math.min(100, n)); }
+
+  function renderStats() {
+    STAT_KEYS.forEach(function (k) {
+      document.getElementById(k + 'Val').textContent = state[k];
+      document.getElementById(k + 'Bar').style.width = state[k] + '%';
+    });
+  }
+
+  function renderTurns() {
+    const dots = document.querySelectorAll('#turns .turn-dot');
+    dots.forEach(function (dot, i) {
+      dot.classList.toggle('done', i < state.turn - 1);
+      dot.classList.toggle('active', i === state.turn - 1 && state.turn <= MAX_TURNS);
+    });
+    const prompt = document.getElementById('prompt');
+    if (state.turn > MAX_TURNS) {
+      prompt.textContent = 'All six turns used. The ending screen is coming in a later week.';
+    } else {
+      prompt.textContent = 'Turn ' + state.turn + ' of ' + MAX_TURNS + ' \u2014 what do you do with it?';
+    }
+  }
+
+  function choose(kind) {
+    if (state.turn > MAX_TURNS) return;
+    const effect = PLACEHOLDER_EFFECTS[kind];
+    STAT_KEYS.forEach(function (k) { state[k] = clamp(state[k] + effect[k]); });
+    history.push(kind);
+    state.turn += 1;
+    renderStats();
+    renderTurns();
+    if (state.turn > MAX_TURNS) {
+      document.querySelectorAll('.choice-btn').forEach(function (b) { b.disabled = true; b.style.opacity = 0.5; b.style.cursor = 'default'; });
+    }
+  }
+
+  ['spread', 'restrict', 'contain'].forEach(function (kind) {
+    document.querySelector('.choice-btn.' + kind).addEventListener('click', function () { choose(kind); });
+  });
+
+  renderStats();
+  renderTurns();
+</script>
 </body>
 </html>
